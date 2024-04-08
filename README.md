@@ -23,3 +23,7 @@ Code powering my ASCII booth
 
 https://python-escpos.readthedocs.io/en/latest/index.html#
 
+## A long tradition of ASCII Photo Booths
+
+https://scottmurray.org/work/ascii-photo-booth
+

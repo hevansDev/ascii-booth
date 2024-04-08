@@ -73,21 +73,25 @@ class Camera(object):
 class SocialFeed(object):
     def __init__(self):
         #TODO store secrets securely
-        config = ConfigParser()
-        config.read('auth.ini') 
-        self.mastodon = Mastodon(client_id = config.get('mastodon', 'client_id'),
-                                 client_secret= config.get('mastodon', 'client_secret'),
-                                 access_token = config.get('mastodon', 'access_token'),
+        self.config = ConfigParser()
+        self.config.read('config.ini') 
+        self.mastodon = Mastodon(client_id = self.config.get('mastodon', 'client_id'),
+                                 client_secret= self.config.get('mastodon', 'client_secret'),
+                                 access_token = self.config.get('mastodon', 'access_token'),
                                  api_base_url = 'https://hachyderm.io/')
     
     def post_image(self,img):
-        print("Posting image...",end="")
-        img.save('out.jpeg')  #TODO post directly from object?
-        media = self.mastodon.media_post('out.jpeg')
-        #TODO what is the most accesible way of describing these images? 
-        media['description'] = 'An ASCII art image of a face'
-        self.mastodon.status_post("", media_ids=[media['id']])
-        print("Posted image")
+        if self.config.get('mastodon', 'enabled') != 'False':
+            print("Posting image...",end="")
+            img.save('out.jpeg')  #TODO post directly from object?
+            media = self.mastodon.media_post('out.jpeg')
+            #TODO what is the most accesible way of describing these images? 
+            media['description'] = 'An ASCII art image of a face'
+            self.mastodon.status_post("", media_ids=[media['id']])
+            print("Posted image")
+            return
+        print("Posting disabled")
+        
 
 def take_ascii_picture():
     print("ASCII Booth working...")

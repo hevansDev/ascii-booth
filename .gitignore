@@ -1,5 +1,5 @@
-# Ignore credentials
-Booth/auth.ini
+# Ignore credentials/config
+*.ini
 # Ignore caches and venv
 .DS_Store
 .venv
