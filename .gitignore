@@ -1,2 +1,6 @@
-.DS_Store
+# Ignore credentials
 Booth/auth.ini
+# Ignore caches and venv
+.DS_Store
+.venv
+__pycache__
