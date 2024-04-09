@@ -1,4 +1,5 @@
 import cv2
+import socket
 
 from time import sleep
 from PIL import Image, ImageFont, ImageDraw
@@ -28,6 +29,14 @@ class ReceiptPrinter(object):
         self.printer.image("out.jpeg",center=True)
         self.printer.cut()
         print("Printed image")
+    
+    def print_status_page(self):
+        print("Printing status page...",end="")
+        hostname = socket.gethostname()
+        IPAddr = socket.gethostbyname(hostname+".local")
+        photoPrinter.printer.text('{} : {}'.format(hostname,IPAddr))
+        photoPrinter.printer.cut()
+        print("Printed status page")
 
 class AsciiConverter(object):
     ### Convert images to ASCII
@@ -72,23 +81,31 @@ class Camera(object):
 
 class SocialFeed(object):
     def __init__(self):
-        #TODO store secrets securely
-        self.config = ConfigParser()
-        self.config.read('config.ini') 
-        self.mastodon = Mastodon(client_id = self.config.get('mastodon', 'client_id'),
-                                 client_secret= self.config.get('mastodon', 'client_secret'),
-                                 access_token = self.config.get('mastodon', 'access_token'),
-                                 api_base_url = 'https://hachyderm.io/')
+        print("Connecting to Mastodon...",end="")
+        try:
+            self.config = ConfigParser()
+            self.config.read('config.ini') 
+            self.mastodon = Mastodon(client_id = self.config.get('mastodon', 'client_id'),
+                                    client_secret= self.config.get('mastodon', 'client_secret'),
+                                    access_token = self.config.get('mastodon', 'access_token'),
+                                    api_base_url = 'https://hachyderm.io/')
+        except Exception as e:
+            print("Couldn't connect to Mastodon\n",e)
+            return
+        print("Connected to Mastodon")
     
     def post_image(self,img):
         if self.config.get('mastodon', 'enabled') != 'False':
             print("Posting image...",end="")
-            img.save('out.jpeg')  #TODO post directly from object?
-            media = self.mastodon.media_post('out.jpeg')
-            #TODO what is the most accesible way of describing these images? 
-            media['description'] = 'An ASCII art image of a face'
-            self.mastodon.status_post("", media_ids=[media['id']])
-            print("Posted image")
+            try:
+                img.save('out.jpeg')  #TODO post directly from object?
+                media = self.mastodon.media_post('out.jpeg')
+                #TODO what is the most accesible way of describing these images? 
+                media['description'] = 'An ASCII art image of a face'
+                self.mastodon.status_post("", media_ids=[media['id']])
+                print("Posted image")
+            except Exception as e:
+                print("Couldn't post image\n",e)
             return
         print("Posting disabled")
         
@@ -97,20 +114,20 @@ def take_ascii_picture():
     print("ASCII Booth working...")
     capturedImage = camera.take_picture()
     asciiImage = asciiConverter.image_to_ascii(capturedImage)
-    outputImage=testPrinter.ascii_to_image(asciiImage)
-    testPrinter.print_receipt(outputImage)
+    outputImage=photoPrinter.ascii_to_image(asciiImage)
+    photoPrinter.print_receipt(outputImage)
     socials.post_image(outputImage)
     print("Done")
-
 
 if __name__ == '__main__':
     printable_width = 576
     printable_height = 576
     camera = Camera(printable_width,printable_height)
     asciiConverter = AsciiConverter('Ñ@#W$9876543210?!abc;:+=-,._ ')
-    testPrinter = ReceiptPrinter(printable_width,printable_height)
+    photoPrinter = ReceiptPrinter(printable_width,printable_height)
     socials = SocialFeed()
     button = Button(3)
     button.when_pressed = take_ascii_picture
+    photoPrinter.print_status_page()
     print("ASCII Booth Ready!")
     pause()
