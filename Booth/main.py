@@ -10,7 +10,6 @@ from gpiozero import Button
 from signal import pause
 from configparser import ConfigParser
 
-# TODO run this file with cron / systemd on startup
 # TODO add black to precommit
 
 logger = logging.getLogger(__name__)
@@ -19,7 +18,7 @@ class ReceiptPrinter(object):
     def __init__(self, printable_width, printable_height):
         self.width = printable_width
         self.height = printable_height
-        self.printer = Usb(0x0416,0x5011,0,out_ep=0x03,profile="TM-L90")
+        self.printer = Usb(0x0416,0x5011,0,out_ep=0x03)
     
     def print_receipt(self,img):
         logger.info("Printing image..." )
@@ -66,7 +65,7 @@ class AsciiConverter(object):
         ## Convert ASCII to jpeg so it can be printed / posted with greater ease
         img = Image.new('L', (13*self.width,20*self.height), 255) #TODO calculate width and height of image dynaimcally
         draw = ImageDraw.Draw(img)
-        font = ImageFont.truetype("courier.ttf", 24)
+        font = ImageFont.truetype("/home/hugh/script/courier.ttf", 24)
         draw.text((0, 0),ascii,0,font=font)
         return img
 
@@ -90,16 +89,16 @@ class Camera(object):
 class SocialFeed(object):
     def __init__(self):
         logger.info("Connecting to Mastodon...")
-        try:
-            self.config = ConfigParser()
-            self.config.read('config.ini') 
-            self.mastodon = Mastodon(client_id = self.config.get('mastodon', 'client_id'),
-                                    client_secret= self.config.get('mastodon', 'client_secret'),
-                                    access_token = self.config.get('mastodon', 'access_token'),
-                                    api_base_url = 'https://hachyderm.io/')
-        except Exception as e:
-            logger.error("Couldn't connect to Mastodon\n",e)
-            return
+        #try:
+        self.config = ConfigParser()
+        self.config.read('/home/hugh/script/config.ini') 
+        self.mastodon = Mastodon(client_id = self.config.get('mastodon', 'client_id'),
+                                client_secret= self.config.get('mastodon', 'client_secret'),
+                                access_token = self.config.get('mastodon', 'access_token'),
+                                api_base_url = 'https://hachyderm.io/')
+        #except Exception as e:
+        #    logger.error("Couldn't connect to Mastodon\n",e)
+        #    return
         logger.info("Connected to Mastodon")
     
     def post_image(self,img):
@@ -129,7 +128,7 @@ def take_ascii_picture():
     logger.info("Done")
 
 if __name__ == '__main__':
-    logging.basicConfig(filename='booth.log', level=logging.INFO, force=True)
+    logging.basicConfig(filename='booth.log', force=True)
     camera = Camera()
     asciiConverter = AsciiConverter('Ñ@#W$9876543210?!abc;:+=-,._ ', # Characters to compose ASCII art from, an array of characters sorted from densest to lease dense
                                     character_width=48, #The length of each line in the ASCII art in chars
@@ -139,7 +138,7 @@ if __name__ == '__main__':
     socials = SocialFeed()
     button = Button(3)
     button.when_pressed = take_ascii_picture
-    #photoPrinter.print_status_page()
+    photoPrinter.print_status_page()
     print('ASCII Booth Ready!')
     logger.info("ASCII Booth Ready!")
     pause()
