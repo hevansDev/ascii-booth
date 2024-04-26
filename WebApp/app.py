@@ -35,7 +35,7 @@ class AsciiConverter(object):
         ## Convert ASCII to jpeg so it can be printed / posted with greater ease
         img = Image.new('L', (13*self.width,20*self.height), 255) #TODO calculate width and height of image dynamically
         draw = ImageDraw.Draw(img)
-        font = ImageFont.truetype("courier.ttf", 24)
+        font = ImageFont.truetype("./app/static/courier.ttf", 24)
         draw.text((0, 0),ascii,0,font=font)
         return img
     
