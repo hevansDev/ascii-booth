@@ -1,4 +1,6 @@
 import re
+import os
+import io
 import logging
 import streamlit as st
 
@@ -35,7 +37,7 @@ class AsciiConverter(object):
         ## Convert ASCII to jpeg so it can be printed / posted with greater ease
         img = Image.new('L', (13*self.width,20*self.height), 255) #TODO calculate width and height of image dynamically
         draw = ImageDraw.Draw(img)
-        font = ImageFont.truetype("./app/static/courier.ttf", 24)
+        font = ImageFont.truetype(os.getcwd()+"/WebApp/static/courier.ttf", 24)
         draw.text((0, 0),ascii,0,font=font)
         return img
     
@@ -43,9 +45,6 @@ asciiConverter = AsciiConverter('Ñ@#W$9876543210?!abc;:+=-,._ ', # Characters t
                                 character_width=128, #The length of each line in the ASCII art in chars
                                 character_height=128 #The number of lines of chars in the ASCII art
                                 )
-
-import os
-import io
 
 with st.form("ascii_app"):
 
