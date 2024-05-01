@@ -1,6 +1,7 @@
 import re, os, io
 import logging
 import streamlit as st
+import pymysql
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -46,14 +47,38 @@ asciiConverter = AsciiConverter('Ñ@#W$9876543210?!abc;:+=-,._ ', # Characters t
 
 with st.form("ascii_app"):
 
-   st.write("ASCII Picture App")
+   st.write("Upload an image to convert it into ASCII art")
 
    uploaded_file = st.file_uploader("Upload an image")
+   name = st.text_input('Name',disabled=False)
    email = st.text_input('Email',disabled=False)
-   agree = st.checkbox("I'd like to see the full version of this talk")
-   submit = st.form_submit_button('Generate image')
+   agree = st.checkbox("I'd like email updates about the ASCII booth project")
+   submit = st.form_submit_button('Convert image')
 
-   
+def write_to_db():
+    # Write survey response to DB
+    timeout = 10
+    connection = pymysql.connect(
+    charset="utf8mb4",
+    connect_timeout=timeout,
+    cursorclass=pymysql.cursors.DictCursor,
+    db="defaultdb",
+    host="ascii-booth-app-db-ascii-booth.k.aivencloud.com",
+    password= st.secrets["MYSQL_PASSWORD"],
+    read_timeout=timeout,
+    port=16534,
+    user= st.secrets["MYSQL_USER"],
+    write_timeout=timeout,
+    )
+
+    try:
+        cursor = connection.cursor()
+        cursor.execute("REPLACE INTO responses (name, email) VALUES ('{0}', '{1}')".format(name,email))
+        cursor.execute("SELECT * FROM responses")
+        print(cursor.fetchall())
+    finally:
+        connection.commit()
+        connection.close()
 
 def validate_email_syntax(email):
     pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
@@ -68,8 +93,9 @@ if submit:
         asciiImage = asciiConverter.image_to_ascii(image)
         outputImage=asciiConverter.ascii_to_image(asciiImage)
         st.image(outputImage.resize((1000,1000)))
-        # TODO for testing online, store user emails someplace safe
-        with open("contacts.txt", "a") as myfile:
-            myfile.write("{},{}\n".format(email,agree))
+
+        if agree:
+            write_to_db()
+
     else:
         st.write("Please upload an image first")
