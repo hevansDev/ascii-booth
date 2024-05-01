@@ -1,6 +1,4 @@
-import re
-import os
-import io
+import re, os, io
 import logging
 import streamlit as st
 
@@ -70,6 +68,7 @@ if submit:
         asciiImage = asciiConverter.image_to_ascii(image)
         outputImage=asciiConverter.ascii_to_image(asciiImage)
         st.image(outputImage.resize((1000,1000)))
+        # TODO for testing online, store user emails someplace safe
         with open("contacts.txt", "a") as myfile:
             myfile.write("{},{}\n".format(email,agree))
     else:
