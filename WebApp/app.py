@@ -74,8 +74,6 @@ def write_to_db():
     try:
         cursor = connection.cursor()
         cursor.execute("REPLACE INTO responses (name, email) VALUES ('{0}', '{1}')".format(name,email))
-        cursor.execute("SELECT * FROM responses")
-        print(cursor.fetchall())
     finally:
         connection.commit()
         connection.close()
@@ -86,16 +84,18 @@ def validate_email_syntax(email):
 
 
 if submit:
-    if validate_email_syntax(email) != True:
+    if uploaded_file is None:
+        st.write("Please upload an image first")
+    elif uploaded_file.type not in ["image/jpeg","image/jpg","image/png"]:
+        st.write("Only PNG and JPG file formats are supported")
+    elif validate_email_syntax(email) != True:
         st.write("Please enter your email")
     elif uploaded_file is not None:
         image = Image.open(io.BytesIO(uploaded_file.read()))
         asciiImage = asciiConverter.image_to_ascii(image)
         outputImage=asciiConverter.ascii_to_image(asciiImage)
         st.image(outputImage.resize((1000,1000)))
-
+        
         if agree:
             write_to_db()
-
-    else:
-        st.write("Please upload an image first")
+        
