@@ -46,7 +46,7 @@ asciiConverter = AsciiConverter('Ñ@#W$9876543210?!abc;:+=-,._ ', # Characters t
                                 )
 
 with st.form("ascii_app"):
-    st.write("Connect with me on LinkedIn [link](%s)" % "https://www.linkedin.com/in/hugh-evans-435134153/")
+    st.write("[Connect with me on LinkedIn](%s)" % "https://www.linkedin.com/in/hugh-evans-435134153/")
     st.write("Upload an image to convert it into ASCII art")
 
     uploaded_file = st.file_uploader("Upload an image")
