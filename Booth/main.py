@@ -89,16 +89,16 @@ class Camera(object):
 class SocialFeed(object):
     def __init__(self):
         logger.info("Connecting to Mastodon...")
-        #try:
-        self.config = ConfigParser()
-        self.config.read('/home/hugh/script/config.ini') 
-        self.mastodon = Mastodon(client_id = self.config.get('mastodon', 'client_id'),
-                                client_secret= self.config.get('mastodon', 'client_secret'),
-                                access_token = self.config.get('mastodon', 'access_token'),
-                                api_base_url = 'https://hachyderm.io/')
-        #except Exception as e:
-        #    logger.error("Couldn't connect to Mastodon\n",e)
-        #    return
+        try:
+            self.config = ConfigParser()
+            self.config.read('/home/hugh/script/config.ini') 
+            self.mastodon = Mastodon(client_id = self.config.get('mastodon', 'client_id'),
+                                    client_secret= self.config.get('mastodon', 'client_secret'),
+                                    access_token = self.config.get('mastodon', 'access_token'),
+                                    api_base_url = 'https://hachyderm.io/')
+        except Exception as e:
+            logger.error("Couldn't connect to Mastodon\n",e)
+            return
         logger.info("Connected to Mastodon")
     
     def post_image(self,img):

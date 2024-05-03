@@ -46,14 +46,14 @@ asciiConverter = AsciiConverter('Ñ@#W$9876543210?!abc;:+=-,._ ', # Characters t
                                 )
 
 with st.form("ascii_app"):
+    st.write("Connect with me on LinkedIn [link](%s)" % "https://www.linkedin.com/in/hugh-evans-435134153/")
+    st.write("Upload an image to convert it into ASCII art")
 
-   st.write("Upload an image to convert it into ASCII art")
-
-   uploaded_file = st.file_uploader("Upload an image")
-   name = st.text_input('Name',disabled=False)
-   email = st.text_input('Email',disabled=False)
-   agree = st.checkbox("I'd like email updates about the ASCII booth project")
-   submit = st.form_submit_button('Convert image')
+    uploaded_file = st.file_uploader("Upload an image")
+    name = st.text_input('Name',disabled=False)
+    email = st.text_input('Email',disabled=False)
+    agree = st.checkbox("I'd like email updates about the ASCII booth project")
+    submit = st.form_submit_button('Convert image')
 
 def write_to_db():
     # Write survey response to DB
