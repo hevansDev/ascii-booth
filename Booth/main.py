@@ -1,4 +1,4 @@
-import cv2
+import imageio as iio
 import socket
 import logging
 
@@ -11,6 +11,8 @@ from signal import pause
 from configparser import ConfigParser
 
 # TODO add black to precommit
+# TODO fix issue where button triggers main process multiple times
+# TODO put relevant packages from README into requirements.txt
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +25,10 @@ class ReceiptPrinter(object):
     def print_receipt(self,img):
         logger.info("Printing image..." )
         img = img.resize((self.width,self.height))
-        img.rotate(180).save('out.jpeg')
-        self.printer.image("out.jpeg",center=True)
+        # Initially rotated due to printer orientation, now removed because camera mounted upside down
+        # img.rotate(180).save('out.jpeg')
+        img.save('print_out.jpeg')
+        self.printer.image("print_out.jpeg",center=True)
         self.printer.cut()
         logger.info("Printed image")
     
@@ -73,17 +77,14 @@ class Camera(object):
     ### Capture and format images from Webcam
     def take_picture(self):
         logger.info("Capturing image...")
-        cap = cv2.VideoCapture(0) # /dev/video0
+        # I am no longer on speaking terms with opencv
+        camera = iio.get_reader("<video0>")
         sleep(2)
-        ret, frame = cap.read()
-        cap.release()
-        img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY))
+        image = camera.get_data(0)
+        camera.close()
+        iio.imwrite("photo_out.jpeg", image)
+        img = Image.open("photo_out.jpeg") 
         logger.info("Image captured")
-        # Brigthen image
-        #enhancer1 = ImageEnhance.Brightness(img)
-        #enhancer2 = ImageEnhance.Contrast(img)
-        #img = enhancer1.enhance(10)
-        #img = enhancer2.enhance(2)
         return img
 
 class SocialFeed(object):
@@ -106,8 +107,8 @@ class SocialFeed(object):
             logger.info("Posting image...")
             try:
                 img = img.resize((1080,1080))
-                img.save('out.jpeg')  #TODO post directly from object?
-                media = self.mastodon.media_post('out.jpeg')
+                img.save('post_out.jpeg')  #TODO post directly from object?
+                media = self.mastodon.media_post('post_out.jpeg')
                 #TODO what is the most accesible way of describing these images? 
                 media['description'] = 'An ASCII art image of a face'
                 self.mastodon.status_post("", media_ids=[media['id']])
