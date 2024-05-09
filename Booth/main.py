@@ -11,7 +11,6 @@ from signal import pause
 from configparser import ConfigParser
 
 # TODO add black to precommit
-# TODO fix issue where button triggers main process multiple times
 # TODO put relevant packages from README into requirements.txt
 
 logger = logging.getLogger(__name__)
@@ -79,7 +78,7 @@ class Camera(object):
         logger.info("Capturing image...")
         # I am no longer on speaking terms with opencv
         camera = iio.get_reader("<video0>")
-        sleep(2)
+        sleep(1)
         image = camera.get_data(0)
         camera.close()
         iio.imwrite("photo_out.jpeg", image)
@@ -127,9 +126,10 @@ def take_ascii_picture():
     photoPrinter.print_receipt(outputImage)
     socials.post_image(outputImage)
     logger.info("Done")
+    sleep(5)
 
 if __name__ == '__main__':
-    logging.basicConfig(filename='booth.log', force=True)
+    logging.basicConfig(filename='/home/hugh/script/booth.log', force=True, level=logging.INFO)
     camera = Camera()
     asciiConverter = AsciiConverter('Ñ@#W$9876543210?!abc;:+=-,._ ', # Characters to compose ASCII art from, an array of characters sorted from densest to lease dense
                                     character_width=48, #The length of each line in the ASCII art in chars
@@ -137,7 +137,7 @@ if __name__ == '__main__':
                                     )
     photoPrinter = ReceiptPrinter(printable_width=576,printable_height=576)
     socials = SocialFeed()
-    button = Button(3)
+    button = Button(17, bounce_time=0.1)
     button.when_pressed = take_ascii_picture
     photoPrinter.print_status_page()
     print('ASCII Booth Ready!')
