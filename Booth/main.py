@@ -20,7 +20,9 @@ class ReceiptPrinter(object):
     def __init__(self, printable_width, printable_height):
         self.width = printable_width
         self.height = printable_height
-        self.printer = Usb(0x0416, 0x5011, 0, out_ep=0x03)
+        self.printer = Usb(
+            0x0416, 0x5011, 0, out_ep=0x03
+        )  # Dependant on specfic model of printer connected
 
     def print_receipt(self, img):
         logger.info("Printing image...")
