@@ -10,8 +10,9 @@ from gpiozero import Button
 from signal import pause
 from configparser import ConfigParser
 
-# TODO add black to precommit
-# TODO put relevant packages from README into requirements.txt
+# TODO fix issue where prints get jammed in the safety cover
+# TODO gracefully handle imageio exceptions i.e WARNING:imageio_ffmpeg:We had to kill ffmpeg to stop it.
+# TODO adjust camera and light positions for clearer more defined faces in images
 
 logger = logging.getLogger(__name__)
 
@@ -153,7 +154,7 @@ if __name__ == "__main__":
     )
     photoPrinter = ReceiptPrinter(printable_width=576, printable_height=576)
     socials = SocialFeed()
-    button = Button(17, bounce_time=0.1)
+    button = Button(3, bounce_time=0.1)
     button.when_pressed = take_ascii_picture
     photoPrinter.print_status_page()
     print("ASCII Booth Ready!")
