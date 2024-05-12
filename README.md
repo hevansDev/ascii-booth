@@ -19,10 +19,6 @@ I came across some fun ASCII Art projects by other people whilst working on this
 
 - This [text to ASCII font converter](https://patorjk.com/software/taag/#p=display&f=Graffiti&t=Type%20Something%20) by Patrick Gillespie is a lot of fun to play around with, it's interesting to see all the creative ways people have used ASCII to achieve different styles of text.
 
-## Booth
-
-Code powering my ASCII booth
-
 ### Reference
 
 https://python-escpos.readthedocs.io/en/latest/index.html#
