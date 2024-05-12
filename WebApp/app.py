@@ -36,13 +36,16 @@ class AsciiConverter(object):
         ## Convert ASCII to jpeg so it can be printed / posted with greater ease
         img = Image.new('L', (13*self.width,20*self.height), 255) #TODO calculate width and height of image dynamically
         draw = ImageDraw.Draw(img)
-        font = ImageFont.truetype(os.getcwd()+"/WebApp/static/courier.ttf", 24)
+        try:
+            font = ImageFont.truetype(os.getcwd()+"/WebApp/static/courier.ttf", 24)
+        except:
+            font = ImageFont.truetype("static/courier.ttf", 24)
         draw.text((0, 0),ascii,0,font=font)
         return img
     
 asciiConverter = AsciiConverter('Ñ@#W$9876543210?!abc;:+=-,._ ', # Characters to compose ASCII art from, an array of characters sorted from densest to lease dense
-                                character_width=128, #The length of each line in the ASCII art in chars
-                                character_height=128 #The number of lines of chars in the ASCII art
+                                character_width=48, #The length of each line in the ASCII art in chars
+                                character_height=48 #The number of lines of chars in the ASCII art
                                 )
 
 with st.form("ascii_app"):
@@ -94,7 +97,7 @@ if submit:
         image = Image.open(io.BytesIO(uploaded_file.read()))
         asciiImage = asciiConverter.image_to_ascii(image)
         outputImage=asciiConverter.ascii_to_image(asciiImage)
-        st.image(outputImage.resize((1000,1000)))
+        st.image(outputImage.resize((576,576)))
         
         if agree:
             write_to_db()
