@@ -10,7 +10,6 @@ from gpiozero import Button
 from signal import pause
 from configparser import ConfigParser
 
-# TODO fix issue where prints get jammed in the safety cover
 # TODO gracefully handle imageio exceptions i.e WARNING:imageio_ffmpeg:We had to kill ffmpeg to stop it.
 # TODO adjust camera and light positions for clearer more defined faces in images
 
@@ -28,9 +27,8 @@ class ReceiptPrinter(object):
     def print_receipt(self, img):
         logger.info("Printing image...")
         img = img.resize((self.width, self.height))
-        # Initially rotated due to printer orientation, now removed because camera mounted upside down
-        # img.rotate(180).save('out.jpeg')
-        img.save("print_out.jpeg")
+        # Rotated due to printer orientation
+        img.rotate(180).save("print_out.jpeg")
         self.printer.image("print_out.jpeg", center=True)
         self.printer.cut()
         logger.info("Printed image")
@@ -94,7 +92,7 @@ class Camera(object):
         iio.imwrite("photo_out.jpeg", image)
         img = Image.open("photo_out.jpeg")
         logger.info("Image captured")
-        return img
+        return img.rotate(180)  # Rotate because camera is installed upside down
 
 
 class SocialFeed(object):
@@ -148,9 +146,9 @@ if __name__ == "__main__":
     )
     camera = Camera()
     asciiConverter = AsciiConverter(
-        "Ñ@#W$9876543210?!abc;:+=-,._ ",  # Characters to compose ASCII art from, an array of characters sorted from densest to lease dense
-        character_width=48,  # The length of each line in the ASCII art in chars
-        character_height=48,  # The number of lines of chars in the ASCII art
+        "@#W$9876543210?!abc;:+=-,._   ",  # Characters to compose ASCII art from, an array of characters sorted from densest to lease dense
+        character_width=56,  # The length of each line in the ASCII art in chars
+        character_height=56,  # The number of lines of chars in the ASCII art
     )
     photoPrinter = ReceiptPrinter(printable_width=576, printable_height=576)
     socials = SocialFeed()
