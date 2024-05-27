@@ -4,3 +4,6 @@
 .DS_Store
 .venv
 __pycache__
+# Ignore output files from workshop
+final.jpg
+output.jpg
