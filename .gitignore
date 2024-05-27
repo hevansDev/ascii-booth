@@ -1,7 +1,9 @@
+# Ignore vscode files
+.vscode/
+.DS_Store
 # Ignore credentials/config
 *.ini
 # Ignore caches and venv
-.DS_Store
 .venv
 __pycache__
 # Ignore output files from workshop

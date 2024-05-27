@@ -2,9 +2,8 @@ import imageio as iio
 import socket
 import logging
 import random
-
 from time import sleep
-from PIL import Image, ImageFont, ImageDraw, ImageEnhance
+from PIL import Image, ImageFont, ImageDraw
 from escpos.printer import Usb
 from mastodon import Mastodon
 from gpiozero import Button
