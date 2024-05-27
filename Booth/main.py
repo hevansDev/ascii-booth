@@ -1,6 +1,7 @@
 import imageio as iio
 import socket
 import logging
+import random
 
 from time import sleep
 from PIL import Image, ImageFont, ImageDraw, ImageEnhance
@@ -10,7 +11,6 @@ from gpiozero import Button
 from signal import pause
 from configparser import ConfigParser
 
-# TODO gracefully handle imageio exceptions i.e WARNING:imageio_ffmpeg:We had to kill ffmpeg to stop it.
 # TODO adjust camera and light positions for clearer more defined faces in images
 
 logger = logging.getLogger(__name__)
@@ -69,11 +69,17 @@ class AsciiConverter(object):
         logger.info("Converted image to ASCII")
         return ascii
 
+    def secret_message(self, ascii, message):
+        # Insert the message on a random line in the multiline string at a random position
+        lines = ascii.split("\n")
+        row = random.randrange(0, len(lines))
+        offset = random.randrange(0, len(lines[row]) - len(message))
+        lines[row] = lines[row][:offset] + message + lines[row][offset + len(message) :]
+        return "\n".join(lines)
+
     def ascii_to_image(self, ascii):
         ## Convert ASCII to jpeg so it can be printed / posted with greater ease
-        img = Image.new(
-            "L", (13 * self.width, 20 * self.height), 255
-        )  # TODO calculate width and height of image dynaimcally
+        img = Image.new("L", (13 * self.width, 20 * self.height), 255)
         draw = ImageDraw.Draw(img)
         font = ImageFont.truetype("/home/hugh/script/courier.ttf", 24)
         draw.text((0, 0), ascii, 0, font=font)
@@ -85,31 +91,35 @@ class Camera(object):
     def take_picture(self):
         logger.info("Capturing image...")
         # I am no longer on speaking terms with opencv
-        camera = iio.get_reader("<video0>")
-        sleep(1)
-        image = camera.get_data(0)
-        camera.close()
-        iio.imwrite("photo_out.jpeg", image)
-        img = Image.open("photo_out.jpeg")
-        logger.info("Image captured")
+        try:
+            camera = iio.get_reader("<video0>")
+            sleep(1)
+            image = camera.get_data(0)
+            camera.close()
+            iio.imwrite("photo_out.jpeg", image)
+            img = Image.open("photo_out.jpeg")
+            logger.info("Image captured")
+        except Exception as e:
+            logger.error("Failed to take image\n", e)
+            return False
         return img.rotate(180)  # Rotate because camera is installed upside down
 
 
 class SocialFeed(object):
     def __init__(self):
         logger.info("Connecting to Mastodon...")
-        # try:
-        self.config = ConfigParser()
-        self.config.read("/home/hugh/script/config.ini")
-        self.mastodon = Mastodon(
-            client_id=self.config.get("mastodon", "client_id"),
-            client_secret=self.config.get("mastodon", "client_secret"),
-            access_token=self.config.get("mastodon", "access_token"),
-            api_base_url="https://hachyderm.io/",
-        )
-        # except Exception as e:
-        #    logger.error("Couldn't connect to Mastodon\n",e)
-        #    return
+        try:
+            self.config = ConfigParser()
+            self.config.read("/home/hugh/script/config.ini")
+            self.mastodon = Mastodon(
+                client_id=self.config.get("mastodon", "client_id"),
+                client_secret=self.config.get("mastodon", "client_secret"),
+                access_token=self.config.get("mastodon", "access_token"),
+                api_base_url="https://hachyderm.io/",
+            )
+        except Exception as e:
+            logger.error("Couldn't connect to Mastodon\n", e)
+            return
         logger.info("Connected to Mastodon")
 
     def post_image(self, img):
@@ -117,27 +127,41 @@ class SocialFeed(object):
             logger.info("Posting image...")
             try:
                 img = img.resize((1080, 1080))
-                img.save("post_out.jpeg")  # TODO post directly from object?
+                img.save("post_out.jpeg")
                 media = self.mastodon.media_post("post_out.jpeg")
-                # TODO what is the most accesible way of describing these images?
+                # TODO what is the most accessible way of describing these images?
                 media["description"] = "An ASCII art image of a face"
-                self.mastodon.status_post("", media_ids=[media["id"]])
+                self.mastodon.status_post(
+                    " I've taken {} ASCII pictures so far, to get yours come find me at the @robotarms@emfcamp.org at @emf@emfcamp.org".format(
+                        self.get_pictures_taken()
+                    ),
+                    media_ids=[media["id"]],
+                )
                 logger.info("Posted image")
             except Exception as e:
                 logger.info("Couldn't post image\n", e)
             return
         logger.info("Posting disabled")
 
+    def get_pictures_taken(self):
+        with open("/home/hugh/script/count.txt", "r") as countFile:
+            pictureCount = int(countFile.readlines()[0]) + 1
+        with open("/home/hugh/script/count.txt", "w") as countFile:
+            countFile.write(str(pictureCount))
+        return pictureCount
+
 
 def take_ascii_picture():
     logger.info("ASCII Booth working...")
     capturedImage = camera.take_picture()
-    asciiImage = asciiConverter.image_to_ascii(capturedImage)
-    outputImage = asciiConverter.ascii_to_image(asciiImage)
-    photoPrinter.print_receipt(outputImage)
-    socials.post_image(outputImage)
-    logger.info("Done")
-    sleep(5)
+    if capturedImage:
+        asciiImage = asciiConverter.image_to_ascii(capturedImage)
+        asciiImage = asciiConverter.secret_message(asciiImage, "EMF CAMP 2024")
+        outputImage = asciiConverter.ascii_to_image(asciiImage)
+        photoPrinter.print_receipt(outputImage)
+        socials.post_image(outputImage)
+        logger.info("Done")
+        sleep(5)
 
 
 if __name__ == "__main__":
