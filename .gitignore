@@ -9,3 +9,5 @@ __pycache__
 # Ignore output files from workshop
 final.jpg
 output.jpg
+grey.jpg
+resized.jpg
